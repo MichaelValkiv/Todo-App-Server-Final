@@ -3,6 +3,26 @@ const filename2 = './data/todo_list.json';
 let todos = require(filename);
 const helper = require('../helpers/helper.js');
 
+const firebase = require('firebase-admin');
+const serviceAccount = require('../todo-list-app-ba9d7-firebase-adminsdk-tlrrv-3717943956.json');
+const firebaseToken = 'AAAARqoUJrw:APA91bGwv0YTitpUJX8Ol5K9hDSQjUpMAxILYok0Qfwe-1Yk_7vgrPMNJn916pweLLSh_d64PWOjGf2wafZvGL1Vof6JrIOTZ3Dgr-MG8LXbN--vrOZ27jWORsEym29cHGLtDR_RxX7-';
+firebase.initializeApp({
+    credential: firebase.credential.cert(serviceAccount),
+    databaseURL: 'https://todo-list-app-ba9d7.firebaseio.com'
+});
+
+const payload = {
+    notification: {
+        title: 'From Node.js server',
+        body: 'Hello user!!!',
+    }
+};
+
+const options = {
+    // priority: 'high',
+    // timeToLive: 60,
+};
+
 function getTodos() {
     return new Promise((resolve, reject) => {
         if (todos.length === 0) {
@@ -34,7 +54,22 @@ function insertTodo(newTodo) {
         newTodo = { ...id, ...date, ...newTodo };
         todos.push(newTodo);
         helper.writeJSONFile(filename2, todos);
-        resolve(newTodo)
+        resolve(newTodo);
+
+        setTimeout(() => {
+            firebase.messaging().sendToDevice(firebaseToken, payload, options).then(
+                (response) => {
+                    console.log('done:', response);
+                    console.log(response.results[0].error);
+                },
+                (error) => {
+                    console.log('error:', error);
+                }
+            );
+        }, 5000);
+
+        // firebase.messaging().sendToDevice(firebaseToken, payload, options);
+        // firebase.messaging().send(payload);
     })
 }
 
