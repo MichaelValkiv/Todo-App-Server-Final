@@ -56,6 +56,11 @@ function insertTodo(newTodo) {
             }
         };
 
+        let deadlineTime = newTodo.deadline;
+        let currentTime = new Date();
+        let timeToDo = deadlineTime.getTime() - currentTime.getTime();
+        console.log(timeToDo);
+
         setTimeout(() => {
             firebase.messaging().sendToDevice(firebaseToken, payload, options).then(
                 (response) => {
@@ -66,7 +71,7 @@ function insertTodo(newTodo) {
                     console.log('error:', error);
                 }
             );
-        }, 5000);
+        }, timeToDo);
 
         // firebase.messaging().sendToDevice(firebaseToken, payload, options);
         // firebase.messaging().send(payload);
